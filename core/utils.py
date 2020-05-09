@@ -3,7 +3,7 @@
 @author: liutaiting
 @lastEditors: liutaiting
 @Date: 2020-05-05 10:57:27
-@LastEditTime: 2020-05-06 18:36:33
+@LastEditTime: 2020-05-09 13:01:51
 '''
 
 import cv2
@@ -33,7 +33,7 @@ def image_preporcess(image, target_size, gt_boxes=None):
     h, w, _ = image.shape
 
     # 比例不变resize图片到指定尺寸，并填充边缘
-    scale = min(iw/w,ih/h)
+    scale = min(iw/w, ih/h)
     nw,nh = int(scale*w),int(scale*h)
     image_resized = cv2.resize(image, (nw,nh))
     

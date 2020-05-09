@@ -3,7 +3,7 @@
 @author: liutaiting
 @lastEditors: liutaiting
 @Date: 2020-05-05 10:55:15
-@LastEditTime: 2020-05-08 12:54:44
+@LastEditTime: 2020-05-09 14:09:33
 '''
 
 import os
@@ -48,10 +48,10 @@ class Dataset(object):
     def __next__(self):
         
         with tf.device('/cpu:0'):
-            self.train_input_sizes = random.choice(self.train_input_sizes)
-            self.train_output_sizes = self.train_input_sizes // self.strides
+            self.train_input_size = random.choice(self.train_input_sizes)
+            self.train_output_sizes = self.train_input_size // self.strides
 
-            batch_image = np.zeros((self.batch_size, self.train_input_sizes, self.train_input_sizes, 3), dtype= np.float32)
+            batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size, 3), dtype= np.float32)
 
             batch_label_sbbox = np.zeros((self.batch_size, self.train_output_sizes[0], self.train_output_sizes[0],
                                           self.anchor_per_scale, 5 + self.num_classes), dtype=np.float32)
@@ -76,9 +76,9 @@ class Dataset(object):
                     label_sbbox, label_mbbox, label_lbbox, sbboxes, mbboxes, lbboxes = self.preprocess_true_boxes(bboxes)
                     
                     batch_image[num, :, :, :] = image
-                    batch_label_lbbox[num, :, :, :, :] = label_sbbox
+                    batch_label_sbbox[num, :, :, :, :] = label_sbbox
                     batch_label_mbbox[num, :, :, :, :] = label_mbbox
-                    batch_label_sbbox[num, :, :, :, :] = label_lbbox
+                    batch_label_lbbox[num, :, :, :, :] = label_lbbox
                     batch_sbboxes[num, :, :] = sbboxes
                     batch_mbboxes[num, :, :] = mbboxes
                     batch_lbboxes[num, :, :] = lbboxes
@@ -86,14 +86,14 @@ class Dataset(object):
                 self.batch_count += 1
                 batch_smaller_target = batch_label_sbbox, batch_sbboxes
                 batch_medium_target = batch_label_mbbox, batch_mbboxes
-                batch_larger_target = batch_larger_target, batch_label_lbbox
+                batch_larger_target = batch_label_lbbox, batch_lbboxes
                 
                 return batch_image, (batch_smaller_target, batch_medium_target, batch_larger_target)
             else:
                 self.batch_count = 0
                 np.random.shuffle(self.annotations)
-                raise StopIteration
-            
+                raise StopIteration          
+
     def random_horizontal_flip(self, image, bboxes):
         if random.random() < 0.5:
             _, w, _ = image.shape
@@ -160,7 +160,7 @@ class Dataset(object):
             image, bboxes = self.random_translate(np.copy(image), np.copy(bboxes))
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image, bboxes = utils.image_preporcess(np.copy(image), [self.train_input_sizes, self.train_input_sizes], np.copy(bboxes))
+        image, bboxes = utils.image_preporcess(np.copy(image), [self.train_input_size, self.train_input_size], np.copy(bboxes))
         return image, bboxes
     
     def bbox_iou(self, boxes1, boxes2):
@@ -170,9 +170,9 @@ class Dataset(object):
         boxes1_area = boxes1[..., 2] * boxes1[..., 3]
         boxes2_area = boxes2[..., 2] * boxes2[..., 3]
 
-        boxes1 = np.concatenate([boxes1[..., :2] - boxes1[...: 2:] * 0.5,
+        boxes1 = np.concatenate([boxes1[..., :2] - boxes1[..., 2:] * 0.5,
                                  boxes1[..., :2] + boxes1[..., 2:] * 0.5], axis=-1)
-        boxes2 = np.concatenate([boxes2[..., :2] - boxes2[...: 2:] * 0.5,
+        boxes2 = np.concatenate([boxes2[..., :2] - boxes2[..., 2:] * 0.5,
                                  boxes2[..., :2] + boxes2[..., 2:] * 0.5], axis=-1)
 
         left_up = np.maximum(boxes1[..., :2], boxes2[..., :2])
@@ -245,6 +245,6 @@ class Dataset(object):
         label_sbbox, label_mbbox, label_lbbox = label
         sbboxes, mbboxes, lbboxes = bboxes_xywh
         return label_sbbox, label_mbbox, label_lbbox, sbboxes, mbboxes, lbboxes
-            
+           
     def __len__(self):
         return self.num_batchs

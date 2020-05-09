@@ -3,7 +3,7 @@
 @author: liutaiting
 @lastEditors: liutaiting
 @Date: 2020-05-05 10:28:46
-@LastEditTime: 2020-05-05 10:51:19
+@LastEditTime: 2020-05-09 11:44:38
 '''
 
 import tensorflow as tf
@@ -15,9 +15,9 @@ class BatchNormalization(tf.keras.layers.BatchNormalization):
         training = tf.logical_and(training,self.trainable)
         return super().call(x, training)
 
-def convolutional(input_layer, filters_shape, donwsample=False,activate=True,bn=True):
-    if donwsample:
-        input_layer = tf.keras.layers.ZeroPadding2D(((1,0)(1,0)))(input_layer)
+def convolutional(input_layer, filters_shape, downsample=False,activate=True,bn=True):
+    if downsample:
+        input_layer = tf.keras.layers.ZeroPadding2D(((1,0), (1,0)))(input_layer)
         padding = 'valid'
         strides = 2
     else:
