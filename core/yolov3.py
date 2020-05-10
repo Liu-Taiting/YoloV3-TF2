@@ -3,7 +3,7 @@
 @author: liutaiting
 @lastEditors: liutaiting
 @Date: 2020-05-05 10:57:34
-@LastEditTime: 2020-05-09 13:53:02
+@LastEditTime: 2020-05-10 12:37:05
 '''
 
 import numpy as np
@@ -13,7 +13,7 @@ import core.common as common
 import core.backbone as backbone
 from core.config import cfg
 
-NUM_CLASS = len(utils.read_calss_names(cfg.YOLO.CLASSES))
+NUM_CLASS = len(utils.read_class_names(cfg.YOLO.CLASSES))
 ANCHORS = utils.get_anchors(cfg.YOLO.ANCHORS)
 STRIDES = np.array(cfg.YOLO.STRIDES)
 IOU_LOSS_THRESH = cfg.YOLO.IOU_LOSS_THRESH

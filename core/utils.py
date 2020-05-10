@@ -3,7 +3,7 @@
 @author: liutaiting
 @lastEditors: liutaiting
 @Date: 2020-05-05 10:57:27
-@LastEditTime: 2020-05-09 13:01:51
+@LastEditTime: 2020-05-10 13:15:14
 '''
 
 import cv2
@@ -12,7 +12,7 @@ import colorsys
 import numpy as np
 from core.config import cfg
 
-def read_calss_names(class_file_name):
+def read_class_names(class_file_name):
     """loads class name from file"""
     names = {}
     with open(class_file_name, 'r') as data:
@@ -50,7 +50,7 @@ def image_preporcess(image, target_size, gt_boxes=None):
         gt_boxes[:,[1,3]] = gt_boxes[:,[1,3]] * scale +dh
         return image_paded,gt_boxes
 
-def draw_bbox(image,bboxes,classes=read_calss_names(cfg.YOLO.CLASSES),show_label=True):
+def draw_bbox(image,bboxes,classes=read_class_names(cfg.YOLO.CLASSES),show_label=True):
     """
     bboxes: [x_min, y_min, x_max, y_max, probability, cls_id]
     """
@@ -102,7 +102,7 @@ def bboxes_iou(boxes1, boxes2):
     inter_section = np.maximum(right_down - left_up,0.0)
     inter_area = inter_section[...,0] *inter_section[...,1]
     union_area = boxes1_area + boxes2_area - inter_area
-    ious = np.maximum(1.0 * inter_area/union_area,np.finfo(np.float32).esp)
+    ious = np.maximum(1.0 * inter_area/union_area,np.finfo(np.float32).eps)
 
     return ious
 
@@ -119,7 +119,7 @@ def nms(bboxes,iou_threshold,sigma=0.3,method='nms'):
 
         while len(cls_bboxes) > 0:
             # mask中score的index,并将其添加到best_bboxes
-            max_ind = np.argmax(cls_mask[:,4])
+            max_ind = np.argmax(cls_bboxes[:,4])
             best_bbox = cls_bboxes[max_ind]
             best_bboxes.append(best_bbox)
             # 去除max_ind后的cls_bboxes
@@ -151,7 +151,7 @@ def postprocess_boxes(pred_bbox, org_img_shape, input_size, score_threshold):
 
     pred_xywh = pred_bbox[:, 0:4]
     pred_conf = pred_bbox[:, 4]
-    pred_prob = pred_bbox[:, 5]
+    pred_prob = pred_bbox[:, 5:]
     
     pred_coor = np.concatenate([pred_xywh[:, :2] - pred_xywh[:, 2:] * 0.5,
                                 pred_xywh[:, :2] + pred_xywh[:, 2:] * 0.5], axis = -1)
